@@ -1,0 +1,42 @@
+name: zekr_shomar
+description: "برنامه ذکرشمار - شمارش صلوات و اذکار شیعی"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.1
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo.png
+    - assets/splash.png
+
+# تنظیمات اسپلش‌اسکرین (با دستور: dart run flutter_native_splash:create)
+flutter_native_splash:
+  color: "#000000"
+  image: assets/splash.png
+  android_12:
+    image: assets/splash.png
+    color: "#000000"
+  android: true
+  ios: false
+  web: false
+
+# تنظیمات آیکون برنامه (با دستور: dart run flutter_launcher_icons)
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/logo.png"
