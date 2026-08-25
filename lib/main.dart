@@ -675,4 +675,9 @@ class _CirclePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _Circl
+  bool shouldRepaint(covariant _CirclePainter oldDelegate) {
+    return oldDelegate.fill != fill ||
+        oldDelegate.line != line ||
+        oldDelegate.accent != accent;
+  }
+}
