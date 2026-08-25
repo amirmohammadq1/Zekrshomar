@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibration/vibration.dart';
 
 void main() {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -163,7 +164,58 @@ class ZekrShomarApp extends StatelessWidget {
           child: child ?? const SizedBox.shrink(),
         );
       },
-      home: const HomeScreen(),
+      home: const _SplashGate(),
+    );
+  }
+}
+
+/// -------------------- گیت اسپلش (تصویر تمام‌صفحه) --------------------
+/// اسپلش بومی اندروید (که روی برخی گوشی‌ها مثل سامسونگ، به‌خاطر
+/// محدودیت سیستمی اندروید ۱۲ به بعد، فقط یک آیکون کوچک وسط صفحه نشون
+/// می‌ده) بلافاصله حذف می‌شود و به‌جایش همین «assets/splash.png» توسط
+/// خود فلاتر و به‌صورت تمام‌صفحه (روی همه‌ی گوشی‌ها یکسان) چند لحظه
+/// نمایش داده می‌شود؛ سپس صفحه اصلی باز می‌شود.
+class _SplashGate extends StatefulWidget {
+  const _SplashGate();
+  @override
+  State<_SplashGate> createState() => _SplashGateState();
+}
+
+class _SplashGateState extends State<_SplashGate> {
+  @override
+  void initState() {
+    super.initState();
+    // به‌محض رندر اولین فریم فلاتر، اسپلش کوچک بومی سیستم را برمی‌داریم
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlutterNativeSplash.remove();
+    });
+    Timer(const Duration(milliseconds: 1600), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 350),
+            pageBuilder: (_, __, ___) => const HomeScreen(),
+            transitionsBuilder: (_, anim, __, child) =>
+                FadeTransition(opacity: anim, child: child),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SizedBox.expand(
+        child: Image.asset(
+          'assets/splash.png',
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const SizedBox.expand(
+            child: ColoredBox(color: Colors.black),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -194,10 +246,6 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     _loadState();
-    // حداقل زمان نمایش اسپلش بومی (کوتاه و ملایم)
-    Timer(const Duration(milliseconds: 1400), () {
-      FlutterNativeSplash.remove();
-    });
   }
 
   Future<void> _loadState() async {
@@ -213,11 +261,27 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _incrementCount() {
-    HapticFeedback.lightImpact();
+    // لرزش کوتاه؛ روی گوشی‌هایی که تنظیمات «لرزش لمسی سیستم» را خاموش
+    // دارند (مثل بسیاری از گوشی‌های سامسونگ)، performHapticFeedback
+    // کار نمی‌کند، پس مستقیماً موتور لرزش را هم صدا می‌زنیم.
+    _vibrateShort();
     setState(() {
       _counts[_dhikr.id] = _count + 1;
     });
     _prefs?.setInt('count_${_dhikr.id}', _count);
+  }
+
+  Future<void> _vibrateShort() async {
+    HapticFeedback.selectionClick();
+    try {
+      final hasVibrator = await Vibration.hasVibrator();
+      if (hasVibrator) {
+        Vibration.vibrate(duration: 20, amplitude: 128);
+      }
+    } catch (_) {
+      // روی دستگاه‌هایی که پلاگین لرزش را پشتیبانی نمی‌کنند، همان
+      // HapticFeedback بالا کافی است.
+    }
   }
 
   void _resetCount() {
