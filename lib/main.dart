@@ -276,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen>
     try {
       final hasVibrator = await Vibration.hasVibrator();
       if (hasVibrator) {
-        Vibration.vibrate(duration: 20, amplitude: 128);
+        Vibration.vibrate(duration: 35, amplitude: 220);
       }
     } catch (_) {
       // روی دستگاه‌هایی که پلاگین لرزش را پشتیبانی نمی‌کنند، همان
